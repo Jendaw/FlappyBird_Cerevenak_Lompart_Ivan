@@ -43,6 +43,12 @@ class Hra:
         pygame.display.set_caption("Flappy Bird")
         self.clock = pygame.time.Clock()
         self.nahraj()
+        self.pipe_width = 8
+        self.pipe_height = 220
+        self.pipe_speed = 10
+        self.pipe_rect = self.pipe_img.get_rect()
+        self.pipe_rect.bottom = self.screen.get_height()-self.floor.get_height()
+        self.pipe_rect.left = self.screen.get_width()
 
     def draw(self):
         self.floor_rect = self.floor.get_rect()
@@ -61,12 +67,12 @@ class Hra:
             self.floors.append(self.floor_rect.copy())
             j+=self.floor.get_width()
 
-
     def nahraj(self):
         self.assets_dir = os.path.join(os.path.dirname(__file__), "assets/images")
         self.bg = pygame.image.load(os.path.join(self.assets_dir, "background.png")).convert()
         self.floor = pygame.image.load(os.path.join(self.assets_dir, "floor.png")).convert()
         self.bird_img = pygame.image.load(os.path.join(self.assets_dir, "bird.png")).convert_alpha()
+        self.pipe_img = pygame.image.load(os.path.join(self.assets_dir, "pipe.png")).convert_alpha()
 
     def collision(self):
         if self.bird.bird_rect.collidelist(self.floors) != -1:
@@ -86,6 +92,10 @@ class Hra:
                     self.bird.jump()
 
             self.draw()
+            self.pipe_rect.x -= self.pipe_speed
+            if self.pipe_rect.right < 0:
+                self.pipe_rect.left = self.screen.get_width()
+            self.screen.blit(self.pipe_img, self.pipe_rect)
             self.bird.update()
             self.collision()
             self.bird.draw()
