@@ -34,8 +34,11 @@ while running:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running = False
-        if event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
-            running = False
+        if event.type == pygame.KEYDOWN:
+            if event.key == pygame.K_SPACE:
+                bird_vel_y = -10.0
+            if event.key == pygame.K_ESCAPE:
+                running = False
 
     bird_vel_y += gravity
     bird_y += bird_vel_y
