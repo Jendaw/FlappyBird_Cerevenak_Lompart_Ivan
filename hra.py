@@ -32,6 +32,9 @@ class Bird:
     def update(self):
         self.bird_vel_y += self.gravity
         self.bird_rect.y += self.bird_vel_y
+        if 0 > self.bird_rect.top:
+            self.bird_vel_y = 0
+            self.bird_rect.top =0
 
 class Hra:
     def __init__(self):
