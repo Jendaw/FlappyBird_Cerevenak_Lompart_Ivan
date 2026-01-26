@@ -23,6 +23,9 @@ class Bird:
         self.bird_vel_y = 0
         self.gravity = 0.5
 
+    def jump(self):
+        self.bird_vel_y = -8
+
     def draw(self):
         self.screen.blit(self.bird_img, (self.bird_rect.x, self.bird_rect.y))
 
@@ -30,15 +33,13 @@ class Bird:
         self.bird_vel_y += self.gravity
         self.bird_rect.y += self.bird_vel_y
 
-
 class Hra:
     def __init__(self):
+        pygame.init()
         self.screen = pygame.display.set_mode((800, 600))
         pygame.display.set_caption("Flappy Bird")
         self.clock = pygame.time.Clock()
         self.nahraj()
-
-
 
     def draw(self):
         self.floor_rect = self.floor.get_rect()
@@ -65,11 +66,9 @@ class Hra:
         self.bird_img = pygame.image.load(os.path.join(self.assets_dir, "bird.png")).convert_alpha()
 
     def collision(self):
-        if pygame.Rect.collideobjects(self.bird.bird_rect, self.floors):
+        if self.bird.bird_rect.collidelist(self.floors) != -1:
             self.bird.bird_vel_y = 0
             self.bird.bird_rect.bottom = self.screen.get_height()-self.floor.get_height()
-        
-    
 
     def run(self):
         self.bird = Bird(self.screen, self.screen.get_width()/2,self.screen.get_height()/2, self.bird_img)
@@ -80,10 +79,12 @@ class Hra:
                     sys.exit()
                 if event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
                     sys.exit()
+                if event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE:
+                    self.bird.jump()
 
             self.draw()
-            self.collision()
             self.bird.update()
+            self.collision()
             self.bird.draw()
             pygame.display.flip()
             self.clock.tick(60)
