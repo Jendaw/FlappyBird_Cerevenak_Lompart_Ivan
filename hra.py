@@ -2,93 +2,52 @@ import sys
 import os
 import pygame
 
+pygame.init()
 
-class Button:
-    def __init__(self, screen, x, y, text):
-        self.screen = screen
-        self.x = x
-        self.y = y
-        self.text = text
-    
-    def draw(self):
-        font = pygame.Font("assets/fonts/flappy-font.ttf", size=20)
+screen = pygame.display.set_mode((800, 600))
+pygame.display.set_caption("Flappy Bird")
+clock = pygame.time.Clock()
 
-class Bird:
-    def __init__(self, screen, x, y, bird_img):
-        self.screen = screen
-        self.bird_img = bird_img
-        self.bird_rect = self.bird_img.get_rect()
-        self.bird_rect.centerx = x
-        self.bird_rect.centery = y
-        self.bird_rect.width, self.bird_rect.height = self.bird_img.get_size()
-        self.bird_vel_y = 0
-        self.gravity = 0.5
+assets_dir = os.path.join(os.path.dirname(__file__), "assets")
+bg_path = os.path.join(assets_dir, "images", "background.png")
+floor_path = os.path.join(assets_dir, "images", "floor.png")
+bird_path = os.path.join(assets_dir, "images", "bird.png")
 
-    def draw(self):
-        self.screen.blit(self.bird_img, (self.bird_rect.x, self.bird_rect.y))
+background = pygame.image.load(bg_path).convert()
+background = pygame.transform.scale(background, screen.get_size())
 
-    def update(self):
-        self.bird_vel_y += self.gravity
-        self.bird_rect.y += self.bird_vel_y
+floor_img = pygame.image.load(floor_path).convert_alpha()
+floor_height = floor_img.get_height()
+floor_img = pygame.transform.scale(floor_img, (screen.get_width(), floor_height))
+floor_y = screen.get_height() - floor_img.get_height()
 
+bird_img = pygame.image.load(bird_path).convert_alpha()
+bird_w, bird_h = bird_img.get_size()
+bird_x = (screen.get_width() - bird_w) / 2
+bird_y = (screen.get_height() - bird_h) / 2
+bird_vel_y = 0.0
+gravity = 0.5
 
-class Hra:
-    def __init__(self):
-        self.screen = pygame.display.set_mode((800, 600))
-        pygame.display.set_caption("Flappy Bird")
-        self.clock = pygame.time.Clock()
-        self.nahraj()
+running = True
 
+while running:
+    for event in pygame.event.get():
+        if event.type == pygame.QUIT:
+            running = False
+        if event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
+            running = False
 
+    bird_vel_y += gravity
+    bird_y += bird_vel_y
+    if bird_y + bird_h >= floor_y:
+        bird_y = floor_y - bird_h
+        bird_vel_y = 0.0
 
-    def draw(self):
-        self.floor_rect = self.floor.get_rect()
-        self.floors = []
+    screen.blit(background, (0, 0))
+    screen.blit(bird_img, (bird_x, bird_y))
+    screen.blit(floor_img, (0, floor_y))
+    pygame.display.flip()
+    clock.tick(60)
 
-        i = 0
-        while i < self.screen.get_width():
-             self.screen.blit(self.bg, (i , 0))
-             i+=self.bg.get_width()
-
-        j = 0
-        while j < self.screen.get_width():
-            self.floor_rect.x = j
-            self.floor_rect.y = self.screen.get_height()-self.floor.get_height()
-            self.screen.blit(self.floor, (self.floor_rect.x, self.floor_rect.y))
-            self.floors.append(self.floor_rect.copy())
-            j+=self.floor.get_width()
-
-
-    def nahraj(self):
-        self.assets_dir = os.path.join(os.path.dirname(__file__), "assets/images")
-        self.bg = pygame.image.load(os.path.join(self.assets_dir, "background.png")).convert()
-        self.floor = pygame.image.load(os.path.join(self.assets_dir, "floor.png")).convert()
-        self.bird_img = pygame.image.load(os.path.join(self.assets_dir, "bird.png")).convert_alpha()
-
-    def collision(self):
-        if pygame.Rect.collideobjects(self.bird.bird_rect, self.floors):
-            self.bird.bird_vel_y = 0
-            self.bird.bird_rect.bottom = self.screen.get_height()-self.floor.get_height()
-        
-    
-
-    def run(self):
-        self.bird = Bird(self.screen, self.screen.get_width()/2,self.screen.get_height()/2, self.bird_img)
-        pygame.font.init()
-        while True:
-            for event in pygame.event.get():
-                if event.type == pygame.QUIT:
-                    sys.exit()
-                if event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
-                    sys.exit()
-
-            self.draw()
-            self.collision()
-            self.bird.update()
-            self.bird.draw()
-            pygame.display.flip()
-            self.clock.tick(60)
-
-
-hra = Hra()
-hra.run()
+pygame.quit()
+sys.exit()
