@@ -80,6 +80,8 @@ class Hra:
         self.pipe_img = pygame.image.load(os.path.join(self.assets_dir, "pipe.png")).convert_alpha()
 
     def collision(self):
+        if self.bird.bird_rect.colliderect(self.pipe_rect) or self.bird.bird_rect.colliderect(self.pipe_top_rect):
+            sys.exit()
         if self.bird.bird_rect.collidelist(self.floors) != -1:
             self.bird.bird_vel_y = 0
             self.bird.bird_rect.bottom = self.screen.get_height()-self.floor.get_height()
