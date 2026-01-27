@@ -1,6 +1,7 @@
 import sys
 import os
 import pygame
+import random
 
 class Button:
     def __init__(self, screen, x, y, text):
@@ -39,16 +40,20 @@ class Bird:
 class Hra:
     def __init__(self):
         pygame.init()
-        self.screen = pygame.display.set_mode((800, 600))
+        self.screen = pygame.display.set_mode((400, 600))
         pygame.display.set_caption("Flappy Bird")
         self.clock = pygame.time.Clock()
         self.nahraj()
-        self.pipe_width = 8
-        self.pipe_height = 220
-        self.pipe_speed = 10
+        self.pipe_speed = 3
+        self.pipe_min_h = 120
+        self.pipe_max_h = 350
+        poz = random.randint(self.pipe_min_h, self.pipe_max_h)
+        self.pipe_img_scaled = pygame.transform.scale(self.pipe_img, (self.pipe_img.get_width(), poz))
         self.pipe_rect = self.pipe_img.get_rect()
         self.pipe_rect.bottom = self.screen.get_height()-self.floor.get_height()
         self.pipe_rect.left = self.screen.get_width()
+        self.gap = 150
+        self.pipe_img_top = pygame.transform.flip(self.pipe_img, False, True)
 
     def draw(self):
         self.floor_rect = self.floor.get_rect()
@@ -82,6 +87,21 @@ class Hra:
     def run(self):
         self.bird = Bird(self.screen, self.screen.get_width()/2,self.screen.get_height()/2, self.bird_img)
         pygame.font.init()
+        floor_y = self.screen.get_height()-self.floor.get_height()
+        while True:
+            poz1 = random.randint(self.pipe_min_h, self.pipe_max_h)
+            top_h = floor_y-poz1-self.gap
+            if top_h >= 80:
+                break
+        self.pipe_img_scaled = pygame.transform.scale(self.pipe_img, (self.pipe_img.get_width(), poz1))
+        self.pipe_rect = self.pipe_img_scaled.get_rect()
+        self.pipe_rect.bottom = floor_y
+        self.pipe_rect.left = self.screen.get_width()
+
+        self.pipe_top_img_scaled = pygame.transform.scale(self.pipe_img_top, (self.pipe_img.get_width(), top_h))
+        self.pipe_top_rect = self.pipe_top_img_scaled.get_rect()
+        self.pipe_top_rect.left = self.pipe_rect.left
+        self.pipe_top_rect.bottom = self.pipe_rect.top-self.gap
         while True:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
@@ -90,12 +110,26 @@ class Hra:
                     sys.exit()
                 if event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE:
                     self.bird.jump()
-
             self.draw()
             self.pipe_rect.x -= self.pipe_speed
+            self.pipe_top_rect.x -= self.pipe_speed
             if self.pipe_rect.right < 0:
+                while True:
+                    poz1 = random.randint(self.pipe_min_h, self.pipe_max_h)
+                    top_h = floor_y-poz1-self.gap
+                    if top_h >= 80:
+                        break
+                self.pipe_img_scaled = pygame.transform.scale(self.pipe_img, (self.pipe_img.get_width(), poz1))
+                self.pipe_rect = self.pipe_img_scaled.get_rect()
+                self.pipe_rect.bottom = floor_y
                 self.pipe_rect.left = self.screen.get_width()
-            self.screen.blit(self.pipe_img, self.pipe_rect)
+                self.pipe_top_img_scaled = pygame.transform.scale(self.pipe_img_top, (self.pipe_img.get_width(), top_h))
+                self.pipe_top_rect = self.pipe_top_img_scaled.get_rect()
+                self.pipe_top_rect.left = self.pipe_rect.left
+                self.pipe_top_rect.bottom = self.pipe_rect.top-self.gap
+
+            self.screen.blit(self.pipe_top_img_scaled, self.pipe_top_rect)
+            self.screen.blit(self.pipe_img_scaled, self.pipe_rect)
             self.bird.update()
             self.collision()
             self.bird.draw()
