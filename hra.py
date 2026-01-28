@@ -47,13 +47,12 @@ class Hra:
         self.pipe_speed = 3
         self.pipe_min_h = 120
         self.pipe_max_h = 350
-        poz = random.randint(self.pipe_min_h, self.pipe_max_h)
-        self.pipe_img_scaled = pygame.transform.scale(self.pipe_img, (self.pipe_img.get_width(), poz))
-        self.pipe_rect = self.pipe_img.get_rect()
-        self.pipe_rect.bottom = self.screen.get_height()-self.floor.get_height()
-        self.pipe_rect.left = self.screen.get_width()
         self.gap = 150
         self.pipe_img_top = pygame.transform.flip(self.pipe_img, False, True)
+        self.pipe_count = 3
+        self.pipe_spacing = 200
+        self.pipe_scale_x = 1.0
+        self.pipes = []
 
     def draw(self):
         self.floor_rect = self.floor.get_rect()
@@ -79,9 +78,31 @@ class Hra:
         self.bird_img = pygame.image.load(os.path.join(self.assets_dir, "bird.png")).convert_alpha()
         self.pipe_img = pygame.image.load(os.path.join(self.assets_dir, "pipe.png")).convert_alpha()
 
+    def dvojica(self, x, floor_y):
+        while True:
+            bottom_h = random.randint(self.pipe_min_h, self.pipe_max_h)
+            top_h = floor_y-bottom_h-self.gap
+            if top_h >= 80:
+                break
+
+        pipe_w = max(1, int(self.pipe_img.get_width()*self.pipe_scale_x))
+
+        bottom1 = pygame.transform.scale(self.pipe_img, (pipe_w, bottom_h))
+        bottom_rect = bottom1.get_rect()
+        bottom_rect.bottom = floor_y
+        bottom_rect.left = x
+
+        top1 = pygame.transform.scale(self.pipe_img_top, (pipe_w, top_h))
+        top_rect = top1.get_rect()
+        top_rect.left = x
+        top_rect.bottom = bottom_rect.top - self.gap
+
+        return {"bottom1": bottom1, "bottom_rect": bottom_rect,"top1": top1,"top_rect": top_rect}
+
     def collision(self):
-        if self.bird.bird_rect.colliderect(self.pipe_rect) or self.bird.bird_rect.colliderect(self.pipe_top_rect):
-            sys.exit()
+        for pipe in self.pipes:
+            if self.bird.bird_rect.colliderect(pipe["bottom_rect"]) or self.bird.bird_rect.colliderect(pipe["top_rect"]):
+                sys.exit()
         if self.bird.bird_rect.collidelist(self.floors) != -1:
             self.bird.bird_vel_y = 0
             self.bird.bird_rect.bottom = self.screen.get_height()-self.floor.get_height()
@@ -90,20 +111,10 @@ class Hra:
         self.bird = Bird(self.screen, self.screen.get_width()/2,self.screen.get_height()/2, self.bird_img)
         pygame.font.init()
         floor_y = self.screen.get_height()-self.floor.get_height()
-        while True:
-            poz1 = random.randint(self.pipe_min_h, self.pipe_max_h)
-            top_h = floor_y-poz1-self.gap
-            if top_h >= 80:
-                break
-        self.pipe_img_scaled = pygame.transform.scale(self.pipe_img, (self.pipe_img.get_width(), poz1))
-        self.pipe_rect = self.pipe_img_scaled.get_rect()
-        self.pipe_rect.bottom = floor_y
-        self.pipe_rect.left = self.screen.get_width()
-
-        self.pipe_top_img_scaled = pygame.transform.scale(self.pipe_img_top, (self.pipe_img.get_width(), top_h))
-        self.pipe_top_rect = self.pipe_top_img_scaled.get_rect()
-        self.pipe_top_rect.left = self.pipe_rect.left
-        self.pipe_top_rect.bottom = self.pipe_rect.top-self.gap
+        self.pipes = []
+        start_x = self.screen.get_width()+100
+        for i in range(self.pipe_count):
+            self.pipes.append(self.dvojica(start_x+i*self.pipe_spacing, floor_y))
         while True:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
@@ -113,25 +124,18 @@ class Hra:
                 if event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE:
                     self.bird.jump()
             self.draw()
-            self.pipe_rect.x -= self.pipe_speed
-            self.pipe_top_rect.x -= self.pipe_speed
-            if self.pipe_rect.right < 0:
-                while True:
-                    poz1 = random.randint(self.pipe_min_h, self.pipe_max_h)
-                    top_h = floor_y-poz1-self.gap
-                    if top_h >= 80:
-                        break
-                self.pipe_img_scaled = pygame.transform.scale(self.pipe_img, (self.pipe_img.get_width(), poz1))
-                self.pipe_rect = self.pipe_img_scaled.get_rect()
-                self.pipe_rect.bottom = floor_y
-                self.pipe_rect.left = self.screen.get_width()
-                self.pipe_top_img_scaled = pygame.transform.scale(self.pipe_img_top, (self.pipe_img.get_width(), top_h))
-                self.pipe_top_rect = self.pipe_top_img_scaled.get_rect()
-                self.pipe_top_rect.left = self.pipe_rect.left
-                self.pipe_top_rect.bottom = self.pipe_rect.top-self.gap
+            max_left = max(pipe["bottom_rect"].left for pipe in self.pipes)
+            for idx, pipe in enumerate(self.pipes):
+                pipe["bottom_rect"].x -= self.pipe_speed
+                pipe["top_rect"].x -= self.pipe_speed
 
-            self.screen.blit(self.pipe_top_img_scaled, self.pipe_top_rect)
-            self.screen.blit(self.pipe_img_scaled, self.pipe_rect)
+                if pipe["bottom_rect"].right < 0:
+                    max_left = max(p["bottom_rect"].left for p in self.pipes)
+                    self.pipes[idx] = self.dvojica(max_left+self.pipe_spacing, floor_y)
+
+            for pipe in self.pipes:
+                self.screen.blit(pipe["top1"], pipe["top_rect"])
+                self.screen.blit(pipe["bottom1"], pipe["bottom_rect"])
             self.bird.update()
             self.collision()
             self.bird.draw()
@@ -140,4 +144,4 @@ class Hra:
 
 
 hra = Hra()
-hra.run()
+hra.run() 
