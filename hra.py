@@ -3,16 +3,6 @@ import os
 import pygame
 import random
 
-class Button:
-    def __init__(self, screen, x, y, text):
-        self.screen = screen
-        self.x = x
-        self.y = y
-        self.text = text
-    
-    def draw(self):
-        font = pygame.Font("assets/fonts/flappy-font.ttf", size=20)
-
 class Bird:
     def __init__(self, screen, x, y, bird_img):
         self.screen = screen
