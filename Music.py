@@ -29,6 +29,11 @@ class Music():
         pygame.mixer.music.stop()
         self.good.play()
 
+    def setVolume(self, volume):
+        pygame.mixer.music.set_volume(volume/100)
+
+    def getVolume(self):
+        return pygame.mixer.music.get_volume()
 
 """
 k = Music()

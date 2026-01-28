@@ -2,6 +2,9 @@ import sys
 import os
 import pygame
 import random
+from menu import Menu
+from settings import Settings
+from Music import Music
 
 class Bird:
     def __init__(self, screen, x, y, bird_img):
@@ -34,6 +37,7 @@ class Hra:
         pygame.display.set_caption("Flappy Bird")
         self.clock = pygame.time.Clock()
         self.nahraj()
+        pygame.display.set_icon(self.bird_img)
         self.pipe_speed = 3
         self.pipe_min_h = 120
         self.pipe_max_h = 350
@@ -43,6 +47,13 @@ class Hra:
         self.pipe_spacing = 200
         self.pipe_scale_x = 1.0
         self.pipes = []
+        self.currentScreen = "menu"
+        self.music = Music()
+        self.music_playing = None
+
+
+        self.settings = Settings(self.screen, self.music)
+        self.menu = Menu(self.screen)
 
     def draw(self):
         self.floor_rect = self.floor.get_rect()
@@ -60,6 +71,7 @@ class Hra:
             self.screen.blit(self.floor, (self.floor_rect.x, self.floor_rect.y))
             self.floors.append(self.floor_rect.copy())
             j+=self.floor.get_width()
+
 
     def nahraj(self):
         self.assets_dir = os.path.join(os.path.dirname(__file__), "assets/images")
@@ -113,22 +125,36 @@ class Hra:
                     sys.exit()
                 if event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE:
                     self.bird.jump()
-            self.draw()
-            max_left = max(pipe["bottom_rect"].left for pipe in self.pipes)
-            for idx, pipe in enumerate(self.pipes):
-                pipe["bottom_rect"].x -= self.pipe_speed
-                pipe["top_rect"].x -= self.pipe_speed
+            # print(pygame.mouse.get_pressed()[0])
+            if self.currentScreen == "menu":
+                if self.music_playing != "menu":
+                    self.music.menu_music()
+                    self.music_playing = "menu"
+                self.currentScreen = self.menu.draw()
+            elif self.currentScreen == "stngs":
+                self.currentScreen = self.settings.draw()
+            elif self.currentScreen == "start":
+                if self.music_playing != "start":
+                    self.music.play_music()
+                    self.music_playing = "start" 
+                self.screen.fill("black") 
+                self.draw()
+                max_left = max(pipe["bottom_rect"].left for pipe in self.pipes)
+                for idx, pipe in enumerate(self.pipes):
+                    pipe["bottom_rect"].x -= self.pipe_speed
+                    pipe["top_rect"].x -= self.pipe_speed
 
-                if pipe["bottom_rect"].right < 0:
-                    max_left = max(p["bottom_rect"].left for p in self.pipes)
-                    self.pipes[idx] = self.dvojica(max_left+self.pipe_spacing, floor_y)
+                    if pipe["bottom_rect"].right < 0:
+                        max_left = max(p["bottom_rect"].left for p in self.pipes)
+                        self.pipes[idx] = self.dvojica(max_left+self.pipe_spacing, floor_y)
 
-            for pipe in self.pipes:
-                self.screen.blit(pipe["top1"], pipe["top_rect"])
-                self.screen.blit(pipe["bottom1"], pipe["bottom_rect"])
-            self.bird.update()
-            self.collision()
-            self.bird.draw()
+                for pipe in self.pipes:
+                    self.screen.blit(pipe["top1"], pipe["top_rect"])
+                    self.screen.blit(pipe["bottom1"], pipe["bottom_rect"])
+                self.bird.update()
+                self.collision()
+                self.bird.draw()
+
             pygame.display.flip()
             self.clock.tick(60)
 
