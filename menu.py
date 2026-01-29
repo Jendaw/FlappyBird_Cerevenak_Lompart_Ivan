@@ -15,14 +15,15 @@ class Menu:
     
     def nahraj(self):
         self.assets_dir = os.path.join(os.path.dirname(__file__), "assets/images")
-        self.bg = pygame.image.load(os.path.join(self.assets_dir, "background.png")).convert()
         self.floor = pygame.image.load(os.path.join(self.assets_dir, "floor.png")).convert()
         self.bird_img = pygame.image.load(os.path.join(self.assets_dir, "bird.png")).convert_alpha()
 
     def zapni(self):
         self.music.menu_music()
 
-    def draw(self):
+    def draw(self,bg,bird):
+        self.bg = bg
+        self.bird_img = bird
         for i in range(0,self.screen.get_width(), self.bg.get_width()):
             self.screen.blit(self.bg ,(i,0))
 

@@ -31,6 +31,11 @@ class Music():
 
     def setVolume(self, volume):
         pygame.mixer.music.set_volume(volume/100)
+    
+    def setSfxVolume(self,volume):
+        self.fail.set_volume(volume/100)
+        self.mid.set_volume(volume/100)
+        self.good.set_volume(volume/100)
 
     def getVolume(self):
         return pygame.mixer.music.get_volume()

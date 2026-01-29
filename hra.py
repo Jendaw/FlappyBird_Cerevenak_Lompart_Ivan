@@ -7,9 +7,9 @@ from settings import Settings
 from Music import Music
 
 class Bird:
-    def __init__(self, screen, x, y, bird_img):
+    def __init__(self, screen, x, y, birdImg):
         self.screen = screen
-        self.bird_img = bird_img
+        self.bird_img = birdImg
         self.bird_rect = self.bird_img.get_rect()
         self.bird_rect.centerx = x
         self.bird_rect.centery = y
@@ -20,8 +20,8 @@ class Bird:
     def jump(self):
         self.bird_vel_y = -8
 
-    def draw(self):
-        self.screen.blit(self.bird_img, (self.bird_rect.x, self.bird_rect.y))
+    def draw(self,birdImg):
+        self.screen.blit(birdImg, (self.bird_rect.x, self.bird_rect.y))
 
     def update(self):
         self.bird_vel_y += self.gravity
@@ -52,7 +52,7 @@ class Hra:
         self.music_playing = None
 
 
-        self.settings = Settings(self.screen, self.music)
+        self.settings = Settings(self.screen, self.music, self.bg, self.bird_img)
         self.menu = Menu(self.screen)
 
     def draw(self):
@@ -76,6 +76,7 @@ class Hra:
     def nahraj(self):
         self.assets_dir = os.path.join(os.path.dirname(__file__), "assets/images")
         self.bg = pygame.image.load(os.path.join(self.assets_dir, "background.png")).convert()
+        self.bg_night = pygame.image.load(os.path.join(self.assets_dir, "background-night.png")).convert()
         self.floor = pygame.image.load(os.path.join(self.assets_dir, "floor.png")).convert()
         self.bird_img = pygame.image.load(os.path.join(self.assets_dir, "bird.png")).convert_alpha()
         self.pipe_img = pygame.image.load(os.path.join(self.assets_dir, "pipe.png")).convert_alpha()
@@ -104,7 +105,7 @@ class Hra:
     def collision(self):
         for pipe in self.pipes:
             if self.bird.bird_rect.colliderect(pipe["bottom_rect"]) or self.bird.bird_rect.colliderect(pipe["top_rect"]):
-                sys.exit()
+                self.music.fail_end()
         if self.bird.bird_rect.collidelist(self.floors) != -1:
             self.bird.bird_vel_y = 0
             self.bird.bird_rect.bottom = self.screen.get_height()-self.floor.get_height()
@@ -130,9 +131,13 @@ class Hra:
                 if self.music_playing != "menu":
                     self.music.menu_music()
                     self.music_playing = "menu"
-                self.currentScreen = self.menu.draw()
+                self.currentScreen = self.menu.draw(self.bg, self.bird_img)
             elif self.currentScreen == "stngs":
-                self.currentScreen = self.settings.draw()
+                self.ret = list(self.settings.draw())
+                if type(self.ret[1]) == type(self.bg):
+                    self.currentScreen = self.ret[0]
+                    self.bg = self.ret[1]
+                    self.bird_img = self.ret[2]
             elif self.currentScreen == "start":
                 if self.music_playing != "start":
                     self.music.play_music()
@@ -153,7 +158,7 @@ class Hra:
                     self.screen.blit(pipe["bottom1"], pipe["bottom_rect"])
                 self.bird.update()
                 self.collision()
-                self.bird.draw()
+                self.bird.draw(self.bird_img)
 
             pygame.display.flip()
             self.clock.tick(60)
