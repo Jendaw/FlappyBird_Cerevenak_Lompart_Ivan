@@ -105,6 +105,7 @@ class Hra:
     def collision(self):
         for pipe in self.pipes:
             if self.bird.bird_rect.colliderect(pipe["bottom_rect"]) or self.bird.bird_rect.colliderect(pipe["top_rect"]):
+                self.music.pipe_bonk()
                 self.music.fail_end()
         if self.bird.bird_rect.collidelist(self.floors) != -1:
             self.bird.bird_vel_y = 0
