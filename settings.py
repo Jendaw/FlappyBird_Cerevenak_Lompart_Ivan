@@ -96,5 +96,5 @@ class Settings:
         else:
             self.prev = self.current
             return "stngs"
-        
+
     

@@ -10,6 +10,7 @@ class Music():
         self.mid = pygame.mixer.Sound(os.path.join(self.sounds_dir, "not_great_not_terrible_loss_party_fukac.wav"))
         self.good = pygame.mixer.Sound(os.path.join(self.sounds_dir, "good_win_applause.wav"))
         self.bonk = pygame.mixer.Sound(os.path.join(self.sounds_dir, "pipe_bonk.mp3"))
+        self.boing = pygame.mixer.Sound(os.path.join(self.sounds_dir, "jump.wav"))
 
     def menu_music(self):
         self.good.stop()
@@ -27,7 +28,7 @@ class Music():
         pygame.mixer.music.stop()
         self.fail.play()
 
-    def mid_end(self):
+    def mid_end(self): #nepoužité
         pygame.mixer.music.stop()
         self.mid.play()
 
@@ -39,7 +40,7 @@ class Music():
         self.bonk.play()
 
     def jump(self):
-        self.bonk.play()
+        self.boing.play()
 
     def setVolume(self, volume):
         pygame.mixer.music.set_volume(volume/100)
@@ -49,6 +50,7 @@ class Music():
         self.mid.set_volume(volume/100)
         self.good.set_volume(volume/100)
         self.bonk.set_volume(volume/100)
+        self.boing.set_volume(volume/100)
 
     def getVolume(self):
         return pygame.mixer.music.get_volume()
