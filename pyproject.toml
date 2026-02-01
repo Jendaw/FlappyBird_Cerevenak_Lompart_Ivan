@@ -2,5 +2,6 @@
 name = "FLappyBird"
 version = "0.0.1"
 dependencies = [
-    "pygame"
+    "pygame",
+    "pygame_widgets"
 ]
