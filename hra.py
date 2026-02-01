@@ -5,6 +5,7 @@ import random
 from menu import Menu
 from settings import Settings
 from Music import Music
+from game_over import Menu as GameOver
 
 class Bird:
     def __init__(self, screen, x, y, birdImg):
@@ -38,6 +39,7 @@ class Hra:
         self.clock = pygame.time.Clock()
         self.nahraj()
         pygame.display.set_icon(self.bird_img)
+
         self.pipe_speed = 3
         self.pipe_min_h = 120
         self.pipe_max_h = 350
@@ -50,10 +52,19 @@ class Hra:
         self.currentScreen = "menu"
         self.music = Music()
         self.music_playing = None
-
+        self.need_reset = True
 
         self.settings = Settings(self.screen, self.music, self.bg, self.bird_img)
         self.menu = Menu(self.screen)
+        self.gameover = GameOver(self.screen)
+
+    def reset_gameplay(self):
+        self.bird = Bird(self.screen, self.screen.get_width()/2, self.screen.get_height()/2, self.bird_img)
+        self.floor_y = self.screen.get_height()-self.floor.get_height()
+        self.pipes = []
+        start_x = self.screen.get_width()+100
+        for i in range(self.pipe_count):
+            self.pipes.append(self.dvojica(start_x+i*self.pipe_spacing, self.floor_y))
 
     def draw(self):
         self.floor_rect = self.floor.get_rect()
@@ -71,7 +82,6 @@ class Hra:
             self.screen.blit(self.floor, (self.floor_rect.x, self.floor_rect.y))
             self.floors.append(self.floor_rect.copy())
             j+=self.floor.get_width()
-
 
     def nahraj(self):
         self.assets_dir = os.path.join(os.path.dirname(__file__), "assets/images")
@@ -103,29 +113,30 @@ class Hra:
         return {"bottom1": bottom1, "bottom_rect": bottom_rect,"top1": top1,"top_rect": top_rect}
 
     def collision(self):
+        if self.currentScreen != "start":
+            return
         for pipe in self.pipes:
             if self.bird.bird_rect.colliderect(pipe["bottom_rect"]) or self.bird.bird_rect.colliderect(pipe["top_rect"]):
-                self.music.pipe_bonk()
                 self.music.fail_end()
+                self.currentScreen = "gameover"
+                self.need_reset = True
+                return
         if self.bird.bird_rect.collidelist(self.floors) != -1:
-            self.bird.bird_vel_y = 0
-            self.bird.bird_rect.bottom = self.screen.get_height()-self.floor.get_height()
+            self.music.fail_end()
+            self.currentScreen = "gameover"
+            self.need_reset = True
 
     def run(self):
-        self.bird = Bird(self.screen, self.screen.get_width()/2,self.screen.get_height()/2, self.bird_img)
         pygame.font.init()
-        floor_y = self.screen.get_height()-self.floor.get_height()
-        self.pipes = []
-        start_x = self.screen.get_width()+100
-        for i in range(self.pipe_count):
-            self.pipes.append(self.dvojica(start_x+i*self.pipe_spacing, floor_y))
+        self.reset_gameplay()
+        self.need_reset = False
         while True:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     sys.exit()
                 if event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
                     sys.exit()
-                if event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE:
+                if event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE and self.currentScreen == "start":
                     self.bird.jump()
             # print(pygame.mouse.get_pressed()[0])
             if self.currentScreen == "menu":
@@ -140,11 +151,15 @@ class Hra:
                     self.bg = self.ret[1]
                     self.bird_img = self.ret[2]
             elif self.currentScreen == "start":
+                if self.need_reset:
+                    self.reset_gameplay()
+                    self.need_reset = False
                 if self.music_playing != "start":
                     self.music.play_music()
                     self.music_playing = "start" 
                 self.screen.fill("black") 
                 self.draw()
+
                 max_left = max(pipe["bottom_rect"].left for pipe in self.pipes)
                 for idx, pipe in enumerate(self.pipes):
                     pipe["bottom_rect"].x -= self.pipe_speed
@@ -152,7 +167,7 @@ class Hra:
 
                     if pipe["bottom_rect"].right < 0:
                         max_left = max(p["bottom_rect"].left for p in self.pipes)
-                        self.pipes[idx] = self.dvojica(max_left+self.pipe_spacing, floor_y)
+                        self.pipes[idx] = self.dvojica(max_left+self.pipe_spacing, self.floor_y)
 
                 for pipe in self.pipes:
                     self.screen.blit(pipe["top1"], pipe["top_rect"])
@@ -161,9 +176,19 @@ class Hra:
                 self.collision()
                 self.bird.draw(self.bird_img)
 
+            elif self.currentScreen == "gameover":
+                if self.music_playing != "gameover":
+                    self.music_playing = "gameover"
+                nxt = self.gameover.draw()
+                if nxt == "start":
+                    self.currentScreen = "start"
+                elif nxt == "stngs":
+                    self.currentScreen = "stngs"
+                else:
+                    self.currentScreen = "menu"
+
             pygame.display.flip()
             self.clock.tick(60)
 
-
 hra = Hra()
-hra.run() 
+hra.run()

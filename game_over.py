@@ -45,7 +45,3 @@ class Menu:
         else:
             self.prev = self.current
             return "menu"
-        
-    def nigga(self):
-        print("nigga")
-    
