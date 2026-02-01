@@ -24,12 +24,15 @@ class Bird:
     def draw(self,birdImg):
         self.screen.blit(birdImg, (self.bird_rect.x, self.bird_rect.y))
 
-    def update(self):
+    def update(self, floor_y):
         self.bird_vel_y += self.gravity
         self.bird_rect.y += self.bird_vel_y
         if 0 > self.bird_rect.top:
             self.bird_vel_y = 0
-            self.bird_rect.top =0
+            self.bird_rect.top = 0
+        if self.bird_rect.bottom > floor_y:
+            self.bird_rect.bottom = floor_y
+            self.bird_vel_y = 0
 
 class Hra:
     def __init__(self):
@@ -53,6 +56,9 @@ class Hra:
         self.music = Music()
         self.music_playing = None
         self.need_reset = True
+        self.score = 0
+        self.font = pygame.font.Font(os.path.join(os.path.dirname(__file__), "assets/fonts/flappy-font.ttf"), 40)
+
 
         self.settings = Settings(self.screen, self.music, self.bg, self.bird_img)
         self.menu = Menu(self.screen)
@@ -65,6 +71,7 @@ class Hra:
         start_x = self.screen.get_width()+100
         for i in range(self.pipe_count):
             self.pipes.append(self.dvojica(start_x+i*self.pipe_spacing, self.floor_y))
+        self.score = 0
 
     def draw(self):
         self.floor_rect = self.floor.get_rect()
@@ -108,9 +115,9 @@ class Hra:
         top1 = pygame.transform.scale(self.pipe_img_top, (pipe_w, top_h))
         top_rect = top1.get_rect()
         top_rect.left = x
-        top_rect.bottom = bottom_rect.top - self.gap
+        top_rect.bottom = bottom_rect.top-self.gap
 
-        return {"bottom1": bottom1, "bottom_rect": bottom_rect,"top1": top1,"top_rect": top_rect}
+        return {"bottom1": bottom1, "bottom_rect": bottom_rect,"top1": top1,"top_rect": top_rect, "passed": False}
 
     def collision(self):
         if self.currentScreen != "start":
@@ -121,10 +128,6 @@ class Hra:
                 self.currentScreen = "gameover"
                 self.need_reset = True
                 return
-        if self.bird.bird_rect.collidelist(self.floors) != -1:
-            self.music.fail_end()
-            self.currentScreen = "gameover"
-            self.need_reset = True
 
     def run(self):
         pygame.font.init()
@@ -156,14 +159,18 @@ class Hra:
                     self.need_reset = False
                 if self.music_playing != "start":
                     self.music.play_music()
-                    self.music_playing = "start" 
-                self.screen.fill("black") 
+                    self.music_playing = "start"
+                self.screen.fill("black")
                 self.draw()
 
                 max_left = max(pipe["bottom_rect"].left for pipe in self.pipes)
                 for idx, pipe in enumerate(self.pipes):
                     pipe["bottom_rect"].x -= self.pipe_speed
                     pipe["top_rect"].x -= self.pipe_speed
+
+                    if not pipe["passed"] and pipe["bottom_rect"].centerx < self.bird.bird_rect.centerx:
+                        pipe["passed"] = True
+                        self.score += 1
 
                     if pipe["bottom_rect"].right < 0:
                         max_left = max(p["bottom_rect"].left for p in self.pipes)
@@ -172,20 +179,25 @@ class Hra:
                 for pipe in self.pipes:
                     self.screen.blit(pipe["top1"], pipe["top_rect"])
                     self.screen.blit(pipe["bottom1"], pipe["bottom_rect"])
-                self.bird.update()
+
+                score_text = self.font.render(str(self.score), True, (255, 255, 255))
+                score_rect = score_text.get_rect(center=(self.screen.get_width() / 2, 50))
+                self.screen.blit(score_text, score_rect)
+
+                self.bird.update(self.floor_y)
                 self.collision()
                 self.bird.draw(self.bird_img)
 
             elif self.currentScreen == "gameover":
                 if self.music_playing != "gameover":
                     self.music_playing = "gameover"
-                nxt = self.gameover.draw()
+                nxt = self.gameover.draw(self.score)
                 if nxt == "start":
                     self.currentScreen = "start"
-                elif nxt == "stngs":
-                    self.currentScreen = "stngs"
-                else:
+                elif nxt == "menu":
                     self.currentScreen = "menu"
+                else:
+                    self.currentScreen = "gameover"
 
             pygame.display.flip()
             self.clock.tick(60)

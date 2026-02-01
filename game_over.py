@@ -8,21 +8,21 @@ class Menu:
         self.screen  = screen
         self.prev = True
         self.current = False
-        self.stngs = Button(self.screen,self.screen.get_width()/2, self.screen.get_height()/2+150, "Settings.png", 150, "black")
-        self.startBtn = Button(self.screen, self.screen.get_width()/2, self.screen.get_height()/2+50, "START.png", 100, "black")
-        self.titleBtn = Button(self.screen, self.screen.get_width()/2 , 100, "Flappy-Ballz.png", 375, "black", False)
+        self.menuBtn = Button(self.screen,self.screen.get_width()/2 - 80, self.screen.get_height()/2+150, "Back-to-Menu.png", 150, "black")
+        self.startBtn = Button(self.screen, self.screen.get_width()/2 + 80, self.screen.get_height()/2+150, "START.png", 100, "black")
+        self.titleBtn = Button(self.screen, self.screen.get_width()/2 , 150, "GAME-OVER.png", 375, "black", False)
+        self.font = pygame.font.Font(os.path.join(os.path.dirname(__file__), "assets/fonts/flappy-font.ttf"), 40)
 
-    
+
     def nahraj(self):
         self.assets_dir = os.path.join(os.path.dirname(__file__), "assets/images")
         self.bg = pygame.image.load(os.path.join(self.assets_dir, "background.png")).convert()
         self.floor = pygame.image.load(os.path.join(self.assets_dir, "floor.png")).convert()
-        self.bird_img = pygame.image.load(os.path.join(self.assets_dir, "bird.png")).convert_alpha()
 
     def zapni(self):
         self.music.menu_music()
 
-    def draw(self):
+    def draw(self, score):
         for i in range(0,self.screen.get_width(), self.bg.get_width()):
             self.screen.blit(self.bg ,(i,0))
 
@@ -32,16 +32,20 @@ class Menu:
         self.current = pygame.mouse.get_pressed()[0]
 
         self.titleBtn.draw()
-        self.screen.blit(self.bird_img,(self.screen.get_width()/2-self.bird_img.get_width()/2, self.screen.get_height()/2-self.bird_img.get_height()/2))
-        self.startBtn.draw()
-        self.stngs.draw()
 
-        if self.stngs.checkHover() and not self.prev and self.current:
+        score_text = self.font.render(f"Score: {score}", True, (255, 255, 255))
+        score_rect = score_text.get_rect(center=(self.screen.get_width()/2, self.screen.get_height()/2-50))
+        self.screen.blit(score_text, score_rect)
+
+        self.startBtn.draw()
+        self.menuBtn.draw()
+
+        if self.menuBtn.checkHover() and not self.prev and self.current:
             self.prev = self.current
-            return "stngs"
+            return "menu"
         elif self.startBtn.checkHover() and not self.prev and self.current:
             self.prev = self.current
             return "start"
         else:
             self.prev = self.current
-            return "menu"
+            return "gameover"
