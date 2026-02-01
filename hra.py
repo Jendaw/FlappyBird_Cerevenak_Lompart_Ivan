@@ -33,6 +33,8 @@ class Bird:
         if self.bird_rect.bottom > floor_y:
             self.bird_rect.bottom = floor_y
             self.bird_vel_y = 0
+            return True
+        return False
 
 class Hra:
     def __init__(self):
@@ -42,6 +44,10 @@ class Hra:
         self.clock = pygame.time.Clock()
         self.nahraj()
         pygame.display.set_icon(self.bird_img)
+        self.scores = []
+        self.high_score = 0
+        if len(self.scores) != 0:
+            self.high_score = max(self.scores)
 
         self.pipe_speed = 3
         self.pipe_min_h = 120
@@ -57,6 +63,7 @@ class Hra:
         self.music_playing = None
         self.need_reset = True
         self.score = 0
+        self.newHigh = False
         self.font = pygame.font.Font(os.path.join(os.path.dirname(__file__), "assets/fonts/flappy-font.ttf"), 40)
 
 
@@ -124,10 +131,21 @@ class Hra:
             return
         for pipe in self.pipes:
             if self.bird.bird_rect.colliderect(pipe["bottom_rect"]) or self.bird.bird_rect.colliderect(pipe["top_rect"]):
-                self.music.fail_end()
+                
+                if len(self.scores) == 0:
+                    self.newHigh = True
+                    self.music.good_end()
+                elif len(self.scores) != 0 and self.score > max(self.scores):
+                    self.newHigh = True
+                    self.music.good_end()
+                else:
+                    self.newHigh = False
+                    self.music.fail_end()
+                self.scores.append(self.score)
                 self.currentScreen = "gameover"
                 self.need_reset = True
                 return
+            
 
     def run(self):
         pygame.font.init()
@@ -141,12 +159,13 @@ class Hra:
                     sys.exit()
                 if event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE and self.currentScreen == "start":
                     self.bird.jump()
-            # print(pygame.mouse.get_pressed()[0])
+                    self.music.jump()
+        
             if self.currentScreen == "menu":
                 if self.music_playing != "menu":
                     self.music.menu_music()
                     self.music_playing = "menu"
-                self.currentScreen = self.menu.draw(self.bg, self.bird_img)
+                self.currentScreen = self.menu.draw(self.bg, self.bird_img, self.scores)
             elif self.currentScreen == "stngs":
                 self.ret = list(self.settings.draw())
                 if type(self.ret[1]) == type(self.bg):
@@ -159,10 +178,10 @@ class Hra:
                     self.need_reset = False
                 if self.music_playing != "start":
                     self.music.play_music()
+
                     self.music_playing = "start"
                 self.screen.fill("black")
                 self.draw()
-
                 max_left = max(pipe["bottom_rect"].left for pipe in self.pipes)
                 for idx, pipe in enumerate(self.pipes):
                     pipe["bottom_rect"].x -= self.pipe_speed
@@ -184,15 +203,28 @@ class Hra:
                 score_rect = score_text.get_rect(center=(self.screen.get_width() / 2, 50))
                 self.screen.blit(score_text, score_rect)
 
-                self.bird.update(self.floor_y)
+                if self.bird.update(self.floor_y):
+                    if len(self.scores) == 0:
+                        self.newHigh = True
+                        self.music.good_end()
+                    elif len(self.scores) != 0 and self.score > max(self.scores):
+                        self.newHigh = True
+                        self.music.good_end()
+                    else:
+                        self.newHigh = False
+                        self.music.fail_end()
+                    self.scores.append(self.score)
+                    self.currentScreen = "gameover"
+                    self.need_reset = True
+            
                 self.collision()
                 self.bird.draw(self.bird_img)
 
             elif self.currentScreen == "gameover":
                 if self.music_playing != "gameover":
                     self.music_playing = "gameover"
-                nxt = self.gameover.draw(self.score)
-                if nxt == "start":
+                nxt = self.gameover.draw(self.score, self.bg, self.scores, self.newHigh)
+                if nxt == "start":  
                     self.currentScreen = "start"
                 elif nxt == "menu":
                     self.currentScreen = "menu"

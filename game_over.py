@@ -16,13 +16,16 @@ class Menu:
 
     def nahraj(self):
         self.assets_dir = os.path.join(os.path.dirname(__file__), "assets/images")
-        self.bg = pygame.image.load(os.path.join(self.assets_dir, "background.png")).convert()
         self.floor = pygame.image.load(os.path.join(self.assets_dir, "floor.png")).convert()
 
     def zapni(self):
         self.music.menu_music()
 
-    def draw(self, score):
+    def draw(self, score, bg, scores, newHigh):
+        self.scores = scores
+        self.newHigh = newHigh
+        self.high_score = max(self.scores)
+        self.bg = bg
         for i in range(0,self.screen.get_width(), self.bg.get_width()):
             self.screen.blit(self.bg ,(i,0))
 
@@ -32,6 +35,10 @@ class Menu:
         self.current = pygame.mouse.get_pressed()[0]
 
         self.titleBtn.draw()
+        newHigh_text = self.font.render("NEW HIGH SCORE", True, "red")
+        newHigh_rect = newHigh_text.get_rect(center=(self.screen.get_width()/2, self.screen.get_height()/2))
+        if self.newHigh:
+            self.screen.blit(newHigh_text, newHigh_rect)
 
         score_text = self.font.render(f"Score: {score}", True, (255, 255, 255))
         score_rect = score_text.get_rect(center=(self.screen.get_width()/2, self.screen.get_height()/2-50))

@@ -97,6 +97,4 @@ class Settings:
             self.prev = self.current
             return "stngs"
         
-    def nigga(self):
-        print("nigga")
     

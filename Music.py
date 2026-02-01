@@ -12,12 +12,16 @@ class Music():
         self.bonk = pygame.mixer.Sound(os.path.join(self.sounds_dir, "pipe_bonk.mp3"))
 
     def menu_music(self):
+        self.good.stop()
         pygame.mixer.music.load(os.path.join(self.sounds_dir, "menu_music.mp3"))
         pygame.mixer.music.play(-1)
+        self.fail.stop()
 
     def play_music(self):
+        self.good.stop()
         pygame.mixer.music.load(os.path.join(self.sounds_dir, "hracia_muzika.mp3"))
         pygame.mixer.music.play(-1)
+        self.fail.stop()
 
     def fail_end(self):
         pygame.mixer.music.stop()
