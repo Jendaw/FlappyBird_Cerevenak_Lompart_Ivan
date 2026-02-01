@@ -13,8 +13,9 @@ class Settings:
         self.prev = True
         self.current = pygame.mouse.get_pressed()[0]
         self.stngs = Button(self.screen,self.screen.get_width()/2, 40, "Settings.png", 175, "black", False)
-        self.font = pygame.font.Font("assets/fonts/flappy-font.ttf", 20)
-
+        self.fonts_dir = os.path.join(os.path.dirname(__file__), "assets", "fonts")
+        font_path = os.path.join(self.fonts_dir, "flappy-font.ttf")
+        self.font = pygame.font.Font(font_path, 20)
         self.birdColorText = Button(self.screen, self.screen.get_width()/2, self.screen.get_height()/2-205, "BIRD-COLOR.png",150, "black", False)
         self.birdColorRed = Button(self.screen, self.screen.get_width()/2-75, self.screen.get_height()/2-140, "redbird-upflap.png", 35, "black")
         self.birdColorBlue = Button(self.screen, self.screen.get_width()/2, self.screen.get_height()/2-140, "bird.png", 35, "black")
@@ -96,6 +97,4 @@ class Settings:
             self.prev = self.current
             return "stngs"
         
-    def nigga(self):
-        print("nigga")
     
