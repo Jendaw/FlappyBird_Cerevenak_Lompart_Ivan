@@ -12,6 +12,7 @@ class Menu:
         self.startBtn = Button(self.screen, self.screen.get_width()/2, self.screen.get_height()/2+50, "START.png", 100, "black")
         self.titleBtn = Button(self.screen, self.screen.get_width()/2 , 100, "Flappy-Bird.png", 375, "black", False)
         self.font = pygame.font.Font(os.path.join(os.path.dirname(__file__), "assets/fonts/flappy-font.ttf"), 40)
+        self.floor_x = 0
 
     
     def nahraj(self):
@@ -34,8 +35,13 @@ class Menu:
         for i in range(0,self.screen.get_width(), self.bg.get_width()):
             self.screen.blit(self.bg ,(i,0))
 
-        for i in range(0,self.screen.get_width(),self.floor.get_width()):
-            self.screen.blit(self.floor,(i,self.screen.get_height()-self.floor.get_height()))
+        self.floor_x -= 1
+        floor_poz = self.floor_x
+        while floor_poz < self.screen.get_width():
+            self.screen.blit(self.floor, (floor_poz, self.screen.get_height()-self.floor.get_height()))
+            floor_poz += self.floor.get_width()
+        if self.floor_x <= -self.floor.get_width():
+            self.floor_x = 0
 
         self.current = pygame.mouse.get_pressed()[0]
 
