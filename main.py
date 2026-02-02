@@ -1,0 +1,5 @@
+from hra.py import Hra
+
+if __name__ == "__main__":
+    hra = Hra()
+    hra.run()

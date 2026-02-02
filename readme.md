@@ -48,6 +48,7 @@ pip install -e
 Projekt využíva hudbu a zvukové efekty z nasledujúcich stránok:
 
 https://mixkit.co/free-sound-effects/
+
 https://uppbeat.io/music/category/game
 
 ### prezentácia
