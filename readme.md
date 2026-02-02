@@ -18,7 +18,7 @@ Projekt používa správu závislostí cez `pyproject.toml`.
 Závislosti nainštaluješ príkazom:
 
 ```bash
-pip install .
+pip install -e
 ```
 ## Ovládanie
 #### kliknutí myšky na tlačidlo štart spustíme hru
