@@ -233,6 +233,3 @@ class Hra:
 
             pygame.display.flip()
             self.clock.tick(60)
-
-hra = Hra()
-hra.run()
