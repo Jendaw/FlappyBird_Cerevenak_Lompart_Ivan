@@ -23,10 +23,10 @@ pip install -e
 ## Ovládanie
 #### kliknutí myšky na tlačidlo štart spustíme hru
 
-| Klávesa | Akcia |
-| :--- | :--- |
-| **Medzerník (Space)** | Skok |
-| **ESC** | Ukončenie celého programu |
+| Klávesa                                    | Akcia |
+|:-------------------------------------------| :--- |
+| **Medzerník (Space) / Ľavé tlačidlo myši** | Skok |
+| **ESC**                                    | Ukončenie celého programu |
 
 ## Vlastnosti hry
 
