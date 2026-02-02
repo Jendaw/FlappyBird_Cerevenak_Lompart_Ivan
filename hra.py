@@ -49,13 +49,15 @@ class Hra:
         if len(self.scores) != 0:
             self.high_score = max(self.scores)
 
-        self.pipe_speed = 3
+        self.pipe_speed_start = 3
+        self.pipe_speed = self.pipe_speed_start
         self.pipe_min_h = 120
         self.pipe_max_h = 350
         self.gap = 150
         self.pipe_img_top = pygame.transform.flip(self.pipe_img, False, True)
         self.pipe_count = 3
-        self.pipe_spacing = 200
+        self.pipe_spacing_start = 200
+        self.pipe_spacing = self.pipe_spacing_start
         self.pipe_scale_x = 1.0
         self.pipes = []
         self.currentScreen = "menu"
@@ -64,6 +66,8 @@ class Hra:
         self.need_reset = True
         self.score = 0
         self.newHigh = False
+        self.floor_x = 0
+        self.bg_x = 0
         self.font = pygame.font.Font(os.path.join(os.path.dirname(__file__), "assets/fonts/flappy-font.ttf"), 40)
 
 
@@ -84,18 +88,22 @@ class Hra:
         self.floor_rect = self.floor.get_rect()
         self.floors = []
 
-        i = 0
-        while i < self.screen.get_width():
-             self.screen.blit(self.bg, (i , 0))
-             i+=self.bg.get_width()
+        self.bg_x -= self.pipe_speed/4
+        bg_poz = self.bg_x
+        while bg_poz < self.screen.get_width():
+            self.screen.blit(self.bg, (bg_poz, 0))
+            bg_poz += self.bg.get_width()
+        if self.bg_x <= -self.bg.get_width():
+            self.bg_x = 0
 
-        j = 0
-        while j < self.screen.get_width():
-            self.floor_rect.x = j
-            self.floor_rect.y = self.screen.get_height()-self.floor.get_height()
-            self.screen.blit(self.floor, (self.floor_rect.x, self.floor_rect.y))
-            self.floors.append(self.floor_rect.copy())
-            j+=self.floor.get_width()
+        self.floor_x -= self.pipe_speed
+        floor_poz = self.floor_x
+        while floor_poz < self.screen.get_width():
+            self.screen.blit(self.floor, (floor_poz, self.screen.get_height()-self.floor.get_height()))
+            floor_poz += self.floor.get_width()
+        if self.floor_x <= -self.floor.get_width():
+            self.floor_x = 0
+
 
     def nahraj(self):
         self.assets_dir = os.path.join(os.path.dirname(__file__), "assets/images")
@@ -152,14 +160,20 @@ class Hra:
         self.reset_gameplay()
         self.need_reset = False
         while True:
+            self.pipe_speed = self.pipe_speed_start
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     sys.exit()
                 if event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
                     sys.exit()
-                if event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE and self.currentScreen == "start":
+                if (event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE) or (event.type == pygame.MOUSEBUTTONDOWN and pygame.mouse.get_pressed()[0] == True)  and self.currentScreen == "start":
                     self.bird.jump()
                     self.music.jump()
+
+            for i in range(1,4):
+                if self.score >= i*5*i:
+                    self.pipe_speed = self.pipe_speed_start + i
+                    self.pipe_spacing = self.pipe_spacing_start - i*20
         
             if self.currentScreen == "menu":
                 if self.music_playing != "menu":

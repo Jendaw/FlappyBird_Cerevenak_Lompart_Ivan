@@ -35,7 +35,7 @@ class Menu:
         for i in range(0,self.screen.get_width(), self.bg.get_width()):
             self.screen.blit(self.bg ,(i,0))
 
-        self.floor_x -= 1
+        self.floor_x -= 0
         floor_poz = self.floor_x
         while floor_poz < self.screen.get_width():
             self.screen.blit(self.floor, (floor_poz, self.screen.get_height()-self.floor.get_height()))
